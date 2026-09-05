@@ -1,0 +1,90 @@
+﻿{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Inchill Adapter API",
+    "version": "1.0.0",
+    "description": "V1-only Inchill backend contract. No tenant or multi-client flow is exposed."
+  },
+  "servers": [{ "url": "/" }],
+  "components": {
+    "securitySchemes": {
+      "ApiKeyAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "x-internal-api-key"
+      }
+    }
+  },
+  "paths": {
+    "/health": {
+      "get": {
+        "summary": "Health check",
+        "security": [],
+        "responses": { "200": { "description": "OK" } }
+      }
+    },
+    "/ready": {
+      "get": {
+        "summary": "Readiness check",
+        "security": [],
+        "responses": { "200": { "description": "READY" }, "503": { "description": "NOT_READY" } }
+      }
+    },
+    "/api/auth/send-otp": {
+      "post": {
+        "summary": "Request an OTP",
+        "security": [{ "ApiKeyAuth": [] }],
+        "responses": { "200": { "description": "Accepted" }, "400": { "description": "Invalid request" } }
+      }
+    },
+    "/api/auth/verify-otp": {
+      "post": {
+        "summary": "Verify OTP and establish the session",
+        "security": [{ "ApiKeyAuth": [] }],
+        "responses": { "200": { "description": "Success" }, "400": { "description": "Invalid request" } }
+      }
+    },
+    "/api/bot/session/validate": {
+      "post": {
+        "summary": "Validate stored session",
+        "security": [{ "ApiKeyAuth": [] }],
+        "responses": { "200": { "description": "Session result" } }
+      }
+    },
+    "/api/bot/verify-id": {
+      "post": {
+        "summary": "Resolve a target identity",
+        "security": [{ "ApiKeyAuth": [] }],
+        "responses": { "200": { "description": "Success" } }
+      }
+    },
+    "/api/bot/wallet-balance": {
+      "post": {
+        "summary": "Fetch wallet balance",
+        "security": [{ "ApiKeyAuth": [] }],
+        "responses": { "200": { "description": "Wallet balance" } }
+      }
+    },
+    "/api/bot/account-history": {
+      "post": {
+        "summary": "Fetch account history",
+        "security": [{ "ApiKeyAuth": [] }],
+        "responses": { "200": { "description": "History" } }
+      }
+    },
+    "/api/bot/agent-profile": {
+      "post": {
+        "summary": "Fetch agent profile",
+        "security": [{ "ApiKeyAuth": [] }],
+        "responses": { "200": { "description": "Profile" } }
+      }
+    },
+    "/api/bot/transfer-readiness": {
+      "post": {
+        "summary": "Read-only transfer readiness",
+        "security": [{ "ApiKeyAuth": [] }],
+        "responses": { "200": { "description": "Readiness" } }
+      }
+    }
+  }
+}

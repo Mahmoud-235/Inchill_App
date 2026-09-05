@@ -1,0 +1,24 @@
+{
+  "name": "inchill-bot",
+  "version": "1.0.0",
+  "description": "Backend-only Inchill V1 integration adapter",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node test/smoke.js",
+    "validate:openapi": "node test/validateOpenapi.js",
+    "client-admin": "node scripts/clientAdmin.js",
+    "migrate:prompt3-indexes": "node scripts/migratePrompt3Indexes.js"
+  },
+  "dependencies": {
+    "all": "^0.0.0",
+    "axios": "^1.7.2",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "mongoose": "^8.4.1",
+    "swagger-ui-express": "^5.0.1"
+  },
+  "devDependencies": {
+    "mongodb-memory-server": "^10.4.3"
+  }
+}

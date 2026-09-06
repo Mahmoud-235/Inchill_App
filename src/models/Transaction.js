@@ -10,22 +10,14 @@ const TransactionSchema = new mongoose.Schema({
 
   serviceType: {
     type: String,
-    enum: ["DIAMOND", "CRYSTAL", "NOBILITY"],
+    enum: ["DIAMOND"],
     required: true,
     default: "DIAMOND",
   },
 
   amount: {
     type: Number,
-    required: function () {
-      return this.serviceType !== "NOBILITY";
-    },
-  },
-
-  nobilityType: {
-    type: String,
-    enum: ["Knight", "Viscount", "Earl", "Duke", null],
-    default: null,
+    required: true,
   },
 
   status: {

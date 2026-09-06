@@ -33,7 +33,6 @@ function parseYmicroUser(payload) {
 
 const WALLET_CURRENCY_FIELDS = Object.freeze({
   3501: "hagoDiamond",
-  1826: "hagoCrystal",
   1835: "hagoDiamondNew",
 });
 
@@ -57,7 +56,6 @@ function parseTurnoverWallet(payload) {
   const balances = {
     hagoDiamond: null,
     hagoDiamondNew: null,
-    hagoCrystal: null,
   };
   for (const account of jsonMsg.accountList) {
     if (!account || typeof account !== "object" || Array.isArray(account))

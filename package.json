@@ -6,6 +6,7 @@
   "scripts": {
     "start": "node server.js",
     "test": "node test/smoke.js",
+    "test:otp": "node test/otp.js",
     "validate:openapi": "node test/validateOpenapi.js",
     "client-admin": "node scripts/clientAdmin.js",
     "migrate:prompt3-indexes": "node scripts/migratePrompt3Indexes.js"

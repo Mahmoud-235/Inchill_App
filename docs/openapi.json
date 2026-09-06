@@ -85,6 +85,34 @@
         "security": [{ "ApiKeyAuth": [] }],
         "responses": { "200": { "description": "Readiness" } }
       }
+    },
+    "/api/bot/transactions": {
+      "post": {
+        "summary": "List an agent's Diamond recharge transactions",
+        "security": [{ "ApiKeyAuth": [] }],
+        "responses": { "200": { "description": "Transactions" }, "400": { "description": "Invalid request" } }
+      }
+    },
+    "/api/bot/recharge/preview": {
+      "post": {
+        "summary": "Preview a Diamond recharge",
+        "security": [{ "ApiKeyAuth": [] }],
+        "responses": { "200": { "description": "Preview" }, "400": { "description": "Invalid request" } }
+      }
+    },
+    "/api/bot/recharge/diamond": {
+      "post": {
+        "summary": "Recharge Diamonds",
+        "security": [{ "ApiKeyAuth": [] }],
+        "responses": { "200": { "description": "Recharge completed" }, "400": { "description": "Invalid request" }, "409": { "description": "Rejected" }, "503": { "description": "Disabled or blocked" } }
+      }
+    },
+    "/api/bot/recharge/reconcile": {
+      "post": {
+        "summary": "Reconcile an unknown Diamond recharge",
+        "security": [{ "ApiKeyAuth": [] }],
+        "responses": { "200": { "description": "Reconciliation data" }, "400": { "description": "Invalid request" }, "404": { "description": "Transaction not found" }, "409": { "description": "Not applicable" } }
+      }
     }
   }
 }

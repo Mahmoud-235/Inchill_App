@@ -8,7 +8,7 @@ function getSession(user) {
     user?.hagoSession || user?.sessionData || {},
   );
   return {
-    accountId: cookies.hagouid || user?.hagoUid || user?.accountId,
+    hagoUid: cookies.hagouid || user?.hagoUid || user?.accountId,
     cookies,
     country: user?.hagoCountry || process.env.INCHILL_COUNTRY || "US",
     language: user?.hagoLanguage || process.env.INCHILL_LANGUAGE || "en",
@@ -18,7 +18,7 @@ function getSession(user) {
 function resolveSession(user) {
   try {
     const session = getSession(user);
-    return session.accountId
+    return session.hagoUid
       ? { ok: true, session }
       : {
           ok: false,
@@ -86,7 +86,7 @@ async function verifyHagoIdApi(targetId, user) {
     ok: true,
     user: result.user || {
       targetId,
-      accountUid: resolved.session.accountId || targetId,
+      accountUid: resolved.session.hagoUid || targetId,
     },
   };
 }
@@ -151,9 +151,9 @@ async function getAgentInfoByUid(user) {
 
   return {
     ok: true,
-    accountUid: resolved.session.accountId,
+    accountUid: resolved.session.hagoUid,
     user: result.user || {
-      accountUid: resolved.session.accountId,
+      accountUid: resolved.session.hagoUid,
       phone: user?.phone || "unknown",
     },
   };
@@ -203,20 +203,32 @@ async function prepareControlledRecharge(user, input) {
       kind: "SESSION_UNAVAILABLE",
       message: "An active Inchill session is required.",
     };
-  return {
-    ok: true,
-    request: { ...input, agentUid: resolved.session.accountId },
-  };
+  return inchill.financial.prepareTransfer(resolved.session, input);
 }
 
 async function sendControlledRecharge(user, request, guard) {
   const resolved = resolveSession(user);
   if (!resolved.ok) return { attempted: false, outcome: "SESSION_PROBLEM" };
-  return { attempted: true, outcome: "SUCCESS", upstreamCode: 1 };
+  return inchill.financial.sendPreparedTransfer(
+    resolved.session,
+    request,
+    guard,
+  );
 }
 
 async function reconcileMutationReadOnly(user, historyQuery) {
-  return { ok: true, history: [] };
+  const resolved = resolveSession(user);
+  if (!resolved.ok)
+    return {
+      ok: false,
+      kind: "SESSION_UNAVAILABLE",
+      message: "An active Inchill session is required.",
+    };
+  const result = await inchill.financial.reconcileReadOnly(
+    resolved.session,
+    historyQuery,
+  );
+  return { ok: true, ...result };
 }
 
 async function getTransferReadiness(user) {

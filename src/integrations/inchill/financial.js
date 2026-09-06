@@ -10,16 +10,13 @@ const {
 const {
   HAGO_APP_ID,
   HAGO_CURRENCIES,
-  createTurnoverSigner,
 } = require("./signers");
 const { normalizeHttpError } = require("./client");
 const { getControlledMutationConfig } = require("../../config/runtime");
 const {
   parseAgencyReadiness,
-  parsePermissionReadiness,
   effectiveTransferCurrency,
 } = require("./transferReadiness");
-const { validateCrystalTransferPreflight } = require("./crystalPreflight");
 
 function isControlledMutationSenderEnabled({
   controlledHeader,
@@ -97,34 +94,6 @@ function createFinancialMutationClient({
     }
   }
 
-  async function getCrystalPreflight(session) {
-    const headers = buildTurnoverHeaders(session);
-    if (!headers) return { wallet: null, permissions: null, agency: null };
-    const signer = createTurnoverSigner();
-    const signed = signer.signData({});
-    const permissionForm = createSignedForm({
-      appId: HAGO_APP_ID,
-      sign: signed.sign,
-      data: signed.data,
-    });
-    const permissions = http
-      .post(`${baseUrl}/agencypay/permissions`, permissionForm, { headers })
-      .then((response) => parsePermissionReadiness(response?.data))
-      .catch(() => null);
-    const agency = getAgencyReadiness(session);
-    const wallet = turnover
-      .getWallet(session)
-      .then((result) => (result?.ok ? result.wallet : null))
-      .catch(() => null);
-    const [resolvedPermissions, resolvedAgency, resolvedWallet] =
-      await Promise.all([permissions, agency, wallet]);
-    return {
-      permissions: resolvedPermissions,
-      agency: resolvedAgency,
-      wallet: resolvedWallet,
-    };
-  }
-
   return {
     async prepareTransfer(session, { targetId, amount, serviceType }) {
       const target = await ymicro.getTargetByVid(session, targetId);
@@ -137,42 +106,30 @@ function createFinancialMutationClient({
               message: "Hago did not provide a target UID.",
             };
 
-      let currencyType;
-      if (serviceType === "CRYSTAL") {
-        const preflight = validateCrystalTransferPreflight({
-          amount,
-          ...(await getCrystalPreflight(session)),
-        });
-        if (!preflight.ok) return preflight;
-        // Crystal is fixed by the bundle and must never inherit Diamond's
-        // agency-currency selection or Diamond-New minimum.
-        currencyType = HAGO_CURRENCIES.HAGO_CRYSTAL;
-      } else if (serviceType === "DIAMOND") {
-        const agencyReadiness = await getAgencyReadiness(session);
-        currencyType = selectDiamondTransferCurrency(agencyReadiness);
-        if (
-          currencyType === HAGO_CURRENCIES.HAGO_DIAMOND_NEW &&
-          Number(amount) < 200
-        ) {
-          return {
-            ok: false,
-            kind: "DIAMOND_MIN_AMOUNT",
-            message: "The confirmed Diamond New minimum amount is 200.",
-          };
-        }
-      } else {
+      if (serviceType !== "DIAMOND") {
         return {
           ok: false,
           kind: "UNSUPPORTED_MUTATION",
           message: "This mutation type is not enabled.",
         };
       }
+      const agencyReadiness = await getAgencyReadiness(session);
+      const currencyType = selectDiamondTransferCurrency(agencyReadiness);
+      if (
+        currencyType === HAGO_CURRENCIES.HAGO_DIAMOND_NEW &&
+        Number(amount) < 200
+      ) {
+        return {
+          ok: false,
+          kind: "DIAMOND_MIN_AMOUNT",
+          message: "The confirmed Diamond New minimum amount is 200.",
+        };
+      }
 
       try {
         const targetUid = String(target.user.uid);
         const seqId = buildSeqId(session.hagoUid, targetUid, now());
-        // `false` is the already-confirmed transfer-account bundle value for
-        // this Diamond/Crystal flow. No alternate flag behavior is inferred.
+        // `false` is the confirmed transfer-account bundle value for Diamond.
         const request = buildTransferAccountRequest({
           targetUid,
           transferAmount: amount,

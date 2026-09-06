@@ -6,14 +6,20 @@ const { createDeviceIdProvider } = require("./deviceId");
 const { buildSmsAuthParams, createSmsAuthTsProvider } = require("./smsAuth");
 const { deriveBrowserSession } = require("./sessionDerivation");
 
-const UAAS_BASE_URL = "https://i.inchillapp.com/uaas/h5";
+const DEFAULT_UAAS_BASE_URL = "https://i.inchillapp.com/uaas/h5";
+function resolveUaasBaseUrl(value = process.env.INCHILL_UAAS_BASE_URL) {
+  const baseUrl = String(value || DEFAULT_UAAS_BASE_URL).replace(/\/+$/, "");
+  return baseUrl.endsWith("/uaas/h5") ? baseUrl : `${baseUrl}/uaas/h5`;
+}
 function createUaasClient({
   http = createInchillClient(),
   sendCodeSigner = createUaasSendCodeSigner(),
   deviceIdProvider = createDeviceIdProvider(),
   smsAuthTsProvider,
   now = Date.now,
+  baseUrl,
 } = {}) {
+  const uaasBaseUrl = resolveUaasBaseUrl(baseUrl);
   const resolvedSmsAuthTsProvider =
     smsAuthTsProvider || createSmsAuthTsProvider({ deviceIdProvider });
   async function sendOtp(phone, countryCode) {
@@ -22,7 +28,7 @@ function createUaasClient({
       signed = await sendCodeSigner.sign({
         phone,
         countryCode,
-        timestamp: Date.now(),
+        timestamp: now(),
       });
     } catch {
       return {
@@ -32,7 +38,7 @@ function createUaasClient({
       };
     }
     try {
-      const response = await http.get(`${UAAS_BASE_URL}/sendCode`, {
+      const response = await http.get(`${uaasBaseUrl}/sendCode`, {
         params: signed,
       });
       return isUaasSuccess(response.data)
@@ -49,13 +55,14 @@ function createUaasClient({
   }
 
   async function verifyOtp(phone, otp, countryCode, deviceId) {
+    const timestamp = now();
     const input = {
       phone,
       otp,
       smsCode: otp,
       countryCode,
       deviceId,
-      timestamp: now(),
+      timestamp,
     };
     const provided = await resolvedSmsAuthTsProvider(input);
     if (!provided?.ok)
@@ -83,11 +90,14 @@ function createUaasClient({
       };
     }
     try {
-      const response = await http.get(`${UAAS_BASE_URL}/smsAuth`, { params });
+      const response = await http.get(`${uaasBaseUrl}/smsAuth`, { params });
       if (!isUaasSuccess(response.data))
         return {
           ok: false,
-          kind: "BUSINESS_ERROR",
+          kind:
+            String(response.data?.result_code) === "20101"
+              ? "OTP_EXPIRED"
+              : "BUSINESS_ERROR",
           message: response.data?.result_desc || "Hago rejected the OTP",
         };
       const session = sessionFromAuthResponse(
@@ -99,7 +109,7 @@ function createUaasClient({
           deriveSession: () =>
             deriveBrowserSession(response.data, {
               smsCode: otp,
-              timestamp: now(),
+              timestamp,
             }),
         },
       );
@@ -120,7 +130,7 @@ function createUaasClient({
     const cookie = buildCookieHeader(session);
     if (!cookie) return { status: "REJECTED" };
     try {
-      const response = await http.get(`${UAAS_BASE_URL}/getMobile`, {
+      const response = await http.get(`${uaasBaseUrl}/getMobile`, {
         headers: { Cookie: cookie },
       });
       if (
@@ -143,4 +153,8 @@ function createUaasClient({
   return { sendOtp, verifyOtp, probeSession };
 }
 
-module.exports = { createUaasClient };
+module.exports = {
+  createUaasClient,
+  DEFAULT_UAAS_BASE_URL,
+  resolveUaasBaseUrl,
+};

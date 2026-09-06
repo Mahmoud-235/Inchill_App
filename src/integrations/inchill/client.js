@@ -14,7 +14,11 @@ function normalizeHttpError(error) {
 }
 
 function createInchillClient(http = axios) {
-  const timeout = Number(process.env.HAGO_REQUEST_TIMEOUT_MS || 15000);
+  const timeout = Number(
+    process.env.INCHILL_REQUEST_TIMEOUT_MS ||
+      process.env.HAGO_REQUEST_TIMEOUT_MS ||
+      15000,
+  );
   return {
     get(url, options = {}) {
       return http.get(url, { timeout, ...options });

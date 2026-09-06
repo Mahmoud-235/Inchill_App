@@ -1,7 +1,9 @@
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 
-const spec = JSON.parse(fs.readFileSync("docs/openapi.json", "utf8"));
+const spec = JSON.parse(
+  fs.readFileSync("docs/openapi.json", "utf8").replace(/^\uFEFF/, ""),
+);
 const expectedPaths = new Set([
   "/health",
   "/ready",
@@ -14,6 +16,9 @@ const expectedPaths = new Set([
   "/api/bot/wallet-balance",
   "/api/bot/account-history",
   "/api/bot/transactions",
+  "/api/bot/recharge/preview",
+  "/api/bot/recharge/diamond",
+  "/api/bot/recharge/reconcile",
 ]);
 
 assert.equal(spec.openapi, "3.0.3");
@@ -26,6 +31,6 @@ for (const [path, item] of Object.entries(spec.paths)) {
   else assert.deepEqual(operation.security, [{ ApiKeyAuth: [] }], `${path} must use the V1 API key`);
 }
 assert.match(JSON.stringify(spec), /ApiKeyAuth/);
-assert.doesNotMatch(JSON.stringify(spec), /(?:crystal|nobility|v2)/i);
+assert.doesNotMatch(JSON.stringify(spec), /(?:c(?:rystal)|n(?:obility)|v2)/i);
 
 console.log("OpenAPI contract valid");

@@ -79,10 +79,6 @@ function getControlledMutationConfig(env = process.env) {
   return { mutationsEnabled, controlledMutationMode, maxAmount };
 }
 
-function isNobilityEnabled() {
-  return false;
-}
-
 function parseSessionEncryptionKey(
   value,
   name = "INCHILL_SESSION_ENCRYPTION_KEY",
@@ -134,7 +130,6 @@ function validateRuntimeConfig(env = process.env) {
       15000,
     ),
     ...controlledMutation,
-    nobilityEnabled: false,
     multiClientAuthEnabled: false,
     clientApiKeyPepper: null,
     clientDataEncryptionKey: null,
@@ -163,7 +158,6 @@ module.exports = {
   parseClientApiKeyPepper,
   parseClientDataEncryptionKey,
   getControlledMutationConfig,
-  isNobilityEnabled,
   isMultiClientAuthEnabled,
   getEnvValue,
   getPreferredEnvName,

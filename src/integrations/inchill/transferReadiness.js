@@ -19,12 +19,10 @@ function emptyReadiness(session = "UNKNOWN") {
     hasTransactionPassword: null,
     transferPermission: { present: false, status: null },
     rechargePermission: { present: false, status: null },
-    crystalWhitelist: { present: false, status: null },
     agencyDiamondCurrency: null,
     effectiveTransferCurrency: DEFAULT_DIAMOND_TRANSFER_CURRENCY,
     walletDiamondLegacyAvailable: false,
     walletDiamondNewAvailable: false,
-    crystalBalanceAvailable: false,
     transferMax: null,
   };
 }
@@ -76,10 +74,6 @@ function parsePermissionReadiness(payload) {
       "transfer_currency_to_other",
     ),
     rechargePermission: permissionEntry(data?.permissions, "recharge_currency"),
-    crystalWhitelist: permissionEntry(
-      data?.whitelistPermissions,
-      "recharge_crystal",
-    ),
   };
 }
 
@@ -96,7 +90,6 @@ function parseWalletReadiness(wallet) {
     return {
       walletDiamondLegacyAvailable: false,
       walletDiamondNewAvailable: false,
-      crystalBalanceAvailable: false,
     };
   return {
     walletDiamondLegacyAvailable:
@@ -105,9 +98,6 @@ function parseWalletReadiness(wallet) {
     walletDiamondNewAvailable:
       Number.isFinite(Number(balances.hagoDiamondNew)) &&
       Number(balances.hagoDiamondNew) > 0,
-    crystalBalanceAvailable:
-      Number.isFinite(Number(balances.hagoCrystal)) &&
-      Number(balances.hagoCrystal) > 0,
   };
 }
 

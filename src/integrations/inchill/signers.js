@@ -3,7 +3,6 @@ const crypto = require("crypto");
 const HAGO_APP_ID = "3501";
 const HAGO_CURRENCIES = Object.freeze({
   HAGO_DIAMOND: 3501,
-  HAGO_CRYSTAL: 1826,
   HAGO_DIAMOND_NEW: 1835,
 });
 

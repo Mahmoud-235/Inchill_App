@@ -32,11 +32,6 @@
                          "type":  "string"
                      },
                      {
-                         "key":  "deviceId",
-                         "value":  "16b83cddd19359622f695264445c1269",
-                         "type":  "string"
-                     },
-                     {
                          "key":  "agentPhone",
                          "value":  "2001007811606",
                          "type":  "string"
@@ -135,7 +130,7 @@
                                                                  ],
                                                       "body":  {
                                                                    "mode":  "raw",
-                                                                   "raw":  "{\n  \"phone\": \"{{phone}}\",\n  \"otp\": \"{{otp}}\",\n  \"deviceId\": \"{{deviceId}}\",\n  \"country\": \"US\",\n  \"language\": \"en\"\n}"
+                                                                   "raw":  "{\n  \"phone\": \"{{phone}}\",\n  \"otp\": \"{{otp}}\",\n  \"country\": \"US\",\n  \"language\": \"en\"\n}"
                                                                },
                                                       "url":  {
                                                                   "raw":  "{{baseUrl}}/api/auth/verify-otp",

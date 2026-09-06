@@ -44,7 +44,6 @@ function mutationIntent({ agentPhone, targetId, amount, serviceType }) {
     targetId: targetId.trim(),
     amount: Number(amount),
     serviceType,
-    nobilityType: null,
   };
 }
 function mutationIntentFingerprint(intent) {
@@ -60,8 +59,7 @@ function existingIntentMatches(existing, intent, fingerprint) {
     existing.agentPhone === intent.agentPhone &&
     existing.targetId === intent.targetId &&
     existing.amount === intent.amount &&
-    existing.serviceType === intent.serviceType &&
-    existing.nobilityType === intent.nobilityType
+    existing.serviceType === intent.serviceType
   );
 }
 function publicTransaction(transaction) {
@@ -70,7 +68,6 @@ function publicTransaction(transaction) {
     targetId: transaction.targetId,
     serviceType: transaction.serviceType,
     amount: transaction.amount,
-    nobilityType: transaction.nobilityType,
     status: transaction.status,
     upstreamStatus: transaction.upstreamStatus,
     upstreamCode: transaction.upstreamCode ?? null,

@@ -130,7 +130,7 @@
                                                                  ],
                                                       "body":  {
                                                                    "mode":  "raw",
-                                                                   "raw":  "{\n  \"phone\": \"{{phone}}\",\n  \"otp\": \"{{otp}}\",\n  \"country\": \"US\",\n  \"language\": \"en\"\n}"
+                                                                   "raw":  "{\n  \"phone\": \"{{phone}}\",\n  \"otp\": \"{{otp}}\"\n}"
                                                                },
                                                       "url":  {
                                                                   "raw":  "{{baseUrl}}/api/auth/verify-otp",

@@ -50,63 +50,7 @@ async function sendOtpApi(phone, countryCode) {
 }
 
 async function verifySmsAuthApi(phone, otp, countryCode, deviceId) {
-  const result = await inchill.uaas.verifyOtp(
-    phone,
-    otp,
-    countryCode,
-    deviceId,
-  );
-  if (!result.ok)
-    return {
-      ok: false,
-      kind: result.kind || "UPSTREAM_ERROR",
-      message: result.message,
-    };
-
-  const session = result.session || {
-    cookies: result.cookies || {},
-    status: result.status || "ACTIVE",
-    hagoUid: result.hagoUid || null,
-    hOpenId: result.hOpenId || null,
-  };
-
-  if (
-    !session ||
-    !session.cookies ||
-    Object.keys(session.cookies).length === 0
-  ) {
-    return {
-      ok: false,
-      kind: "SESSION_ESTABLISHMENT_UNPROVEN",
-      message:
-        "The Inchill smsAuth response did not include a proven authenticated session.",
-    };
-  }
-
-  const probe = await inchill.uaas.probeSession(session);
-  if (
-    !probe ||
-    !probe.ok ||
-    !["VALID", "SUCCESS", "ACTIVE", "OK"].includes(
-      String(probe.status || "").toUpperCase(),
-    )
-  ) {
-    return {
-      ok: false,
-      kind: "SESSION_ESTABLISHMENT_UNPROVEN",
-      message:
-        "The Inchill authenticated session could not be validated with /uaas/h5/getMobile.",
-    };
-  }
-
-  return {
-    ok: true,
-    session: {
-      ...session,
-      status: probe.status || session.status || "VALID",
-    },
-    probe,
-  };
+  return inchill.uaas.verifyOtp(phone, otp, countryCode, deviceId);
 }
 
 async function verifySession(user) {

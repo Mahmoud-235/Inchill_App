@@ -1,5 +1,5 @@
 const { parseTurnoverWallet, parseTurnoverHistory } = require("./parsers");
-const { createHagoHttpClient, normalizeHttpError } = require("./client");
+const { createInchillClient, normalizeHttpError } = require("./client");
 const { buildCookieHeader } = require("./session");
 const { HAGO_APP_ID, createTurnoverSigner } = require("./signers");
 const TURNOVER_BASE_URL =
@@ -143,7 +143,7 @@ function validIntegerArray(values, maxLength) {
 }
 
 function createTurnoverClient({
-  http = createHagoHttpClient(),
+  http = createInchillClient(),
   signer = createTurnoverSigner(),
   baseUrl = TURNOVER_BASE_URL,
 } = {}) {

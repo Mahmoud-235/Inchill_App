@@ -41,25 +41,31 @@ exports.verifyOtp = async (req, res) => {
       ? req.body.language.trim()
       : undefined;
   if (!validPhone(phone) || !OTP_PATTERN.test(otp || ""))
-    return res.status(400).json({
-      status: "ERROR",
-      message: "A valid phone number and OTP are required.",
-    });
+    return res
+      .status(400)
+      .json({
+        status: "ERROR",
+        message: "A valid phone number and OTP are required.",
+      });
   if (
     (country && !/^[A-Z]{2}$/.test(country)) ||
     (language && !/^[a-z]{2,10}(?:-[A-Za-z0-9]+)?$/.test(language))
   )
-    return res.status(400).json({
-      status: "ERROR",
-      message: "country or language format is invalid.",
-    });
+    return res
+      .status(400)
+      .json({
+        status: "ERROR",
+        message: "country or language format is invalid.",
+      });
   const pending = pendingOtps.get(phone);
   if (!pending || pending.expiresAt < Date.now()) {
     pendingOtps.delete(phone);
-    return res.status(400).json({
-      status: "ERROR",
-      message: "No active OTP request exists for this phone.",
-    });
+    return res
+      .status(400)
+      .json({
+        status: "ERROR",
+        message: "No active OTP request exists for this phone.",
+      });
   }
   const result = await verifySmsAuthApi(
     phone,
@@ -84,12 +90,14 @@ exports.verifyOtp = async (req, res) => {
     !result.session.cookies.hagouid ||
     !result.session.cookies.uaasCookie
   ) {
-    return res.status(502).json({
-      status: "ERROR",
-      message:
-        "Hago login response did not contain a complete authenticated session.",
-      code: "INCOMPLETE_SESSION",
-    });
+    return res
+      .status(502)
+      .json({
+        status: "ERROR",
+        message:
+          "Hago login response did not contain a complete authenticated session.",
+        code: "INCOMPLETE_SESSION",
+      });
   }
   await User.findOneAndUpdate(
     { phone },

@@ -1,4 +1,4 @@
-const { createHagoHttpClient, normalizeHttpError } = require("./client");
+const { normalizeHttpError, createInchillClient } = require("./client");
 const { buildCookieHeader } = require("./session");
 const { parseYmicroUser } = require("./parsers");
 
@@ -29,7 +29,7 @@ function normalizeYmicroId(value) {
 }
 
 function createYmicroClient({
-  http = createHagoHttpClient(),
+  http = createInchillClient(),
   now = () => Date.now(),
 } = {}) {
   async function request(session, method, payload) {

@@ -1,4 +1,4 @@
-const { createHagoHttpClient } = require("./client");
+const { createInchillClient } = require("./client");
 const {
   buildTurnoverHeaders,
   createSignedForm,
@@ -112,7 +112,7 @@ function parseWalletReadiness(wallet) {
 }
 
 function createTransferReadinessClient({
-  http = createHagoHttpClient(),
+  http = createInchillClient(),
   uaas,
   turnover,
   signer = createTurnoverSigner(),

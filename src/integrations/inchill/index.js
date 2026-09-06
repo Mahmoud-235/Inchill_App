@@ -1,67 +1,59 @@
+const { createUaasClient } = require("./uaas");
+const { createYmicroClient } = require("./ymicro");
+const { createTurnoverClient } = require("./turnover");
+const { createDeviceIdProvider } = require("./deviceId");
 const { createInchillClient } = require("./client");
-const { isTrustedDeviceId } = require("./deviceId");
+const { createFinancialMutationClient } = require("./financial");
+const { createTransferReadinessClient } = require("./transferReadiness");
+const { createNobilityReadOnlyClient } = require("./nobilityClient");
+const { createNobilityMutationClient } = require("./nobilityMutation");
+const {
+  createNobilityPurchaseReadinessClient,
+} = require("./nobilityPurchaseReadiness");
 
-function createInchillIntegration(env = process.env) {
-  const client = createInchillClient(env);
-
+function createInchillIntegration(dependencies = {}) {
+  const deviceIdProvider = createDeviceIdProvider(
+    dependencies.deviceIdProvider,
+  );
+  const ymicro = createYmicroClient(dependencies.ymicro);
+  const turnover = createTurnoverClient(dependencies.turnover);
+  const uaas = createUaasClient({ ...dependencies.uaas, deviceIdProvider });
+  const nobility = createNobilityReadOnlyClient({
+    http: dependencies.nobility?.http || createInchillClient(),
+    ...dependencies.nobility,
+  });
   return {
-    uaas: {
-      async sendOtp(phone, countryCode) {
-        const result = await client.sendOtp(phone, countryCode);
-        if (!result.ok) return { ok: false, kind: result.kind || "UPSTREAM_ERROR", message: result.message };
-        return { ok: true, ...result.data };
-      },
-      async verifyOtp(phone, otp, countryCode, deviceId) {
-        if (!isTrustedDeviceId(deviceId)) {
-          return { ok: false, kind: "MISSING_DEVICE_ID", message: "A valid Inchill deviceId is required." };
-        }
-        const result = await client.verifyOtp(phone, otp, countryCode, deviceId);
-        if (!result.ok) return { ok: false, kind: result.kind || "UPSTREAM_ERROR", message: result.message };
-        return { ok: true, ...result.data, session: result.session, cookies: result.cookies, status: result.status, hagoUid: result.hagoUid };
-      },
-      async probeSession(session) {
-        const result = await client.probeSession(session);
-        if (!result.ok) return { ok: false, kind: result.kind || "UPSTREAM_ERROR", message: result.message };
-        return { ok: true, ...result.data };
-      },
-    },
-    turnover: {
-      async getWallet(session) {
-        const result = await client.getWallet(session);
-        if (!result.ok) return { ok: false, kind: result.kind || "UPSTREAM_ERROR", message: result.message };
-        return { ok: true, ...result.data };
-      },
-      async getHistory(session, query) {
-        const result = await client.getHistory(session, query);
-        if (!result.ok) return { ok: false, kind: result.kind || "UPSTREAM_ERROR", message: result.message };
-        return { ok: true, ...result.data };
-      },
-    },
-    readiness: {
-      async getTransferReadiness(session) {
-        const result = await client.getTransferReadiness(session);
-        if (!result.ok) return { ok: false, kind: result.kind || "UPSTREAM_ERROR", message: result.message };
-        return { ok: true, ...result.data };
-      },
-    },
-    account: {
-      async getProfile(session) {
-        const result = await client.getProfile(session);
-        if (!result.ok) return { ok: false, kind: result.kind || "UPSTREAM_ERROR", message: result.message };
-        return { ok: true, ...result.data };
-      },
-      async resolveAccountById(targetId, session) {
-        const result = await client.resolveAccountById(targetId, session);
-        if (!result.ok) return { ok: false, kind: result.kind || "UPSTREAM_ERROR", message: result.message };
-        return { ok: true, ...result.data };
-      },
-    },
-    deviceIdProvider: {
-      async getDeviceId(context = {}) {
-        const value = context.deviceId || context?.body?.deviceId || null;
-        return isTrustedDeviceId(value) ? String(value).trim() : null;
-      },
-    },
+    uaas,
+    ymicro,
+    turnover,
+    financial: createFinancialMutationClient({
+      http: dependencies.financial?.http || createInchillClient(),
+      ymicro,
+      turnover,
+      ...dependencies.financial,
+    }),
+    readiness: createTransferReadinessClient({
+      http: dependencies.readiness?.http || createInchillClient(),
+      uaas,
+      turnover,
+      ...dependencies.readiness,
+    }),
+    nobility,
+    nobilityPurchaseReadiness: createNobilityPurchaseReadinessClient({
+      uaas,
+      ymicro,
+      nobility,
+      turnover,
+    }),
+    nobilityMutation: createNobilityMutationClient({
+      http: dependencies.nobilityMutation?.http || createInchillClient(),
+      uaas,
+      ymicro,
+      nobility,
+      turnover,
+      ...dependencies.nobilityMutation,
+    }),
+    deviceIdProvider,
   };
 }
 

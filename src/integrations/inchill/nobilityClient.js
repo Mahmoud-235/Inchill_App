@@ -1,4 +1,4 @@
-const { createHagoHttpClient, normalizeHttpError } = require("./client");
+const { createInchillClient, normalizeHttpError } = require("./client");
 const { buildCookieHeader } = require("./session");
 const {
   NOBLE_RPC,
@@ -121,7 +121,7 @@ function normalizeNobilityReadiness(config, current) {
 }
 
 function createNobilityReadOnlyClient({
-  http = createHagoHttpClient(),
+  http = createInchillClient(),
   now = () => Date.now(),
   runtime = NOBLE_YMICRO_RUNTIME,
 } = {}) {
